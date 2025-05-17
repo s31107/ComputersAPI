@@ -7,16 +7,16 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 @Entity
-@Table(name = "BRANDS")
+@Table(name = "HARD_DRIVES")
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
 @Getter
-public class Brand {
+public class HardDrive {
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
     @Column(name = "ID")
     private long id;
-    @Column(name = "NAME", length = 50, nullable = false, unique = true)
-    private String name;
+    @Column(name = "TYPE", length = 5, nullable = false, unique = true)
+    private String type;
 }

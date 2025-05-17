@@ -7,16 +7,16 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 @Entity
-@Table(name = "BRANDS")
+@Table(name = "RAM_TYPES")
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
 @Getter
-public class Brand {
+public class RamType {
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
     @Column(name = "ID")
     private long id;
-    @Column(name = "NAME", length = 50, nullable = false, unique = true)
-    private String name;
+    @Column(name = "TYPE", length = 10, nullable = false, unique = true)
+    private String type;
 }
