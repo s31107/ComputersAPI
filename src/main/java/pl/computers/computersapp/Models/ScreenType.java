@@ -1,10 +1,7 @@
 package pl.computers.computersapp.Models;
 
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
 @Entity
 @Table(name = "SCREEN_TYPES")
@@ -12,6 +9,7 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @Builder
 @Getter
+@Setter
 public class ScreenType {
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)

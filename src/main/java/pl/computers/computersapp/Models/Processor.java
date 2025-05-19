@@ -1,11 +1,7 @@
 package pl.computers.computersapp.Models;
 
 import jakarta.persistence.*;
-import jakarta.validation.constraints.Min;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
 import java.math.BigDecimal;
 
@@ -15,6 +11,7 @@ import java.math.BigDecimal;
 @NoArgsConstructor
 @Builder
 @Getter
+@Setter
 public class Processor {
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
@@ -22,12 +19,10 @@ public class Processor {
     private long id;
     @Column(name = "FREQUENCY", precision = 4, scale = 2, nullable = false)
     private BigDecimal freq;
-    @Column(name = "MODEL", length = 50, nullable = false)
+    @Column(name = "MODEL", length = 50, nullable = false, unique = true)
     private String model;
-    @Column(name = "CORES", nullable = false, unique = true)
-    @Min(1)
+    @Column(name = "CORES", nullable = false)
     private int cores;
     @Column(name = "THREADS", nullable = false)
-    @Min(1)
     private int threads;
 }
