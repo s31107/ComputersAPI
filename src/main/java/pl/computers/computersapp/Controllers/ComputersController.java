@@ -5,6 +5,7 @@ import org.springframework.data.mapping.PropertyReferenceException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.server.ResponseStatusException;
 import pl.computers.computersapp.Models.DTOs.ComputerDTO;
 import pl.computers.computersapp.Models.DTOs.ComputerGetDTO;
 import pl.computers.computersapp.Services.ComputersService;
@@ -29,8 +30,12 @@ public class ComputersController {
     }
 
     @GetMapping ("/{id}")
-    public ComputerGetDTO getComputerById(@PathVariable long id) {
-        return computersService.getComputerById(id);
+    public ResponseEntity<?> getComputerById(@PathVariable long id) {
+        try {
+            return ResponseEntity.ok(computersService.getComputerById(id));
+        } catch (NoSuchElementException exc) {
+            return new ResponseEntity<>(exc.getMessage(), HttpStatus.CONFLICT);
+        }
     }
 
     @PostMapping("/addComputer")
@@ -39,6 +44,8 @@ public class ComputersController {
             return ResponseEntity.ok(computersService.createComputer(computerDTO));
         } catch (NoSuchElementException | IllegalArgumentException exc) {
             return new ResponseEntity<>(exc.getMessage(), HttpStatus.CONFLICT);
+        } catch (Exception exc) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST);
         }
     }
 
@@ -48,6 +55,8 @@ public class ComputersController {
             computersService.updateComputer(computerDTO);
         } catch (NoSuchElementException | IllegalArgumentException exc) {
             return new ResponseEntity<>(exc.getMessage(), HttpStatus.CONFLICT);
+        } catch (Exception exc) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST);
         } return ResponseEntity.noContent().build();
     }
 
@@ -57,6 +66,8 @@ public class ComputersController {
             computersService.deleteComputer(id);
         } catch (NoSuchElementException exc) {
             return new ResponseEntity<>(exc.getMessage(), HttpStatus.NOT_FOUND);
+        } catch (Exception exc) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST);
         } return ResponseEntity.noContent().build();
     }
 }

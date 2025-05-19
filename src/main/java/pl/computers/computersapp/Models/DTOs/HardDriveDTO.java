@@ -11,5 +11,5 @@ public record HardDriveDTO (
     String hardDriveType,
     @NotNull
     @Min(1)
-    int hardDriveCapacity
+    int capacity
 ) {}

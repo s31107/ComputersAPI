@@ -10,14 +10,14 @@ import java.math.BigDecimal;
 public record ProcessorDTO (
     @Min(1)
     @NotNull
-    BigDecimal processorFreq,
+    BigDecimal freq,
     @NotBlank
     @Size(max = 50)
-    String processorModel,
+    String model,
     @Min(1)
     @NotNull
-    int processorCores,
+    int cores,
     @Min(1)
     @NotNull
-    int processorThreads
+    int threads
 ) {}

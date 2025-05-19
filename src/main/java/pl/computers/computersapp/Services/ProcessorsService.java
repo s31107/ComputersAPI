@@ -38,14 +38,13 @@ public class ProcessorsService {
         processorRepository.deleteById(id);
     }
 
-    public Processor updateProcessor(
-            long id, BigDecimal freq, String model, int cores, int threads, ComputerRepository computersRepository) {
-        try {
-            return ServiceStrategies.enumObjectUpdateStrategy(id, computersRepository, processorRepository,
-                    Map.of("Freq", freq, "Model", model, "Cores", cores, "Threads", threads));
-        } catch (InvocationTargetException | NoSuchMethodException | IllegalAccessException
-                 | InstantiationException e) {
-            throw new RuntimeException(e);
-        }
+    public Processor updateProcessor(long id, BigDecimal freq, String model, int cores, int threads) {
+        Processor dbProcessor = processorRepository.findById(id).orElseThrow(
+                () -> new IllegalArgumentException("Processor with id: " + id + " not found!"));
+        dbProcessor.setFreq(freq);
+        dbProcessor.setModel(model);
+        dbProcessor.setCores(cores);
+        dbProcessor.setThreads(threads);
+        return processorRepository.save(dbProcessor);
     }
 }

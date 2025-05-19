@@ -2,7 +2,6 @@ package pl.computers.computersapp.Services;
 
 import jakarta.transaction.Transactional;
 import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import pl.computers.computersapp.Models.*;
 import pl.computers.computersapp.Models.DTOs.*;
@@ -64,13 +63,13 @@ public class ComputersService {
     public ComputerGetDTO createComputer(ComputerDTO computerDTO) {
         Brand brand = brandsService.createBrand(computerDTO.brandName());
         HardDrive hardDrive = hardDrivesService.createHardDrive(computerDTO.hardDrive().hardDriveType(),
-                computerDTO.hardDrive().hardDriveCapacity());
-        Processor processor = processorsService.createProcessor(computerDTO.processor().processorFreq(),
-                computerDTO.processor().processorModel(), computerDTO.processor().processorCores(),
-                computerDTO.processor().processorThreads());
+                computerDTO.hardDrive().capacity());
+        Processor processor = processorsService.createProcessor(computerDTO.processor().freq(),
+                computerDTO.processor().model(), computerDTO.processor().cores(),
+                computerDTO.processor().threads());
         Ram ram = ramsService.createRam(computerDTO.ram().ramType(), computerDTO.ram().ramNumber());
         Screen screen = screenService.createScreen(computerDTO.screen().screenType(),
-                computerDTO.screen().screenResolutionX(), computerDTO.screen().screenResolutionY());
+                computerDTO.screen().resolutionX(), computerDTO.screen().resolutionY());
         return mapComputerToDTO(computerRepository.save(Computer.builder().brand(brand).computerName(
                 computerDTO.computerName()).hardDrive(hardDrive).processor(processor).ram(ram).screen(
                         screen).build()));
@@ -83,16 +82,15 @@ public class ComputersService {
         computer.setBrand(brandsService.updateBrand(computer.getBrand().getId(), computerDTO.brandName(),
                 computerRepository));
         computer.setHardDrive(hardDrivesService.updateHardDrive(computer.getHardDrive().getId(),
-                computerDTO.hardDrive().hardDriveCapacity(), computerDTO.hardDrive().hardDriveType()));
+                computerDTO.hardDrive().capacity(), computerDTO.hardDrive().hardDriveType()));
         computer.setProcessor(processorsService.updateProcessor(computer.getProcessor().getId(),
-                computerDTO.processor().processorFreq(), computerDTO.processor().processorModel(),
-                computerDTO.processor().processorCores(), computerDTO.processor().processorThreads(),
-                computerRepository));
+                computerDTO.processor().freq(), computerDTO.processor().model(),
+                computerDTO.processor().cores(), computerDTO.processor().threads()));
         computer.setRam(ramsService.updateRam(computer.getRam().getId(), computerDTO.ram().ramType(),
                 computerDTO.ram().ramNumber()));
         computer.setScreen(screenService.updateScreen(computer.getScreen().getId(),
-                computerDTO.screen().screenType(), computerDTO.screen().screenResolutionX(),
-                computerDTO.screen().screenResolutionY()));
+                computerDTO.screen().screenType(), computerDTO.screen().resolutionX(),
+                computerDTO.screen().resolutionY()));
         computerRepository.save(computer);
     }
 
