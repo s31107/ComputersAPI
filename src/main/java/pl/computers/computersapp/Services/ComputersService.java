@@ -9,6 +9,7 @@ import pl.computers.computersapp.Repositories.ComputerRepository;
 
 import java.util.List;
 import java.util.NoSuchElementException;
+import java.util.Optional;
 
 @Service
 public class ComputersService {
@@ -35,15 +36,19 @@ public class ComputersService {
         Processor processor = computer.getProcessor();
         Ram ram = computer.getRam();
         Screen screen = computer.getScreen();
-        ScreenType screenType = screen.getScreenType();
 
-        HardDriveDTO hardDriveDTO = new HardDriveDTO(
-                hardDrive.getHardDriveType().getType(), hardDrive.getCapacity());
-        ProcessorDTO processorDTO = new ProcessorDTO(
-                processor.getFreq(), processor.getModel(), processor.getCores(), processor.getThreads());
-        RamDTO ramDTO = new RamDTO(computer.getRam().getRamNumber(), ram.getRamType().getType());
-        ScreenDTO screenDTO = new ScreenDTO(
-                screen.getResolutionX(), screen.getResolutionY(), screenType.getType());
+        HardDriveDTO hardDriveDTO = Optional.ofNullable(hardDrive)
+                .map(hd -> new HardDriveDTO(hd.getHardDriveType().getType(), hd.getCapacity()))
+                .orElse(null);
+        ProcessorDTO processorDTO = Optional.ofNullable(processor)
+                .map(p -> new ProcessorDTO(p.getFreq(), p.getModel(), p.getCores(), p.getThreads()))
+                .orElse(null);
+        RamDTO ramDTO = Optional.ofNullable(ram)
+                .map(r -> new RamDTO(r.getRamNumber(), r.getRamType().getType()))
+                .orElse(null);
+        ScreenDTO screenDTO = Optional.ofNullable(screen)
+                .map(s -> new ScreenDTO(s.getResolutionX(), s.getResolutionY(), s.getScreenType().getType()))
+                .orElse(null);
 
         return new ComputerGetDTO(computer.getId(), computer.getBrand().getName(), computer.getComputerName(),
                 hardDriveDTO, processorDTO, ramDTO, screenDTO);
@@ -62,14 +67,17 @@ public class ComputersService {
     @Transactional
     public ComputerGetDTO createComputer(ComputerDTO computerDTO) {
         Brand brand = brandsService.createBrand(computerDTO.brandName());
-        HardDrive hardDrive = hardDrivesService.createHardDrive(computerDTO.hardDrive().hardDriveType(),
-                computerDTO.hardDrive().capacity());
-        Processor processor = processorsService.createProcessor(computerDTO.processor().freq(),
-                computerDTO.processor().model(), computerDTO.processor().cores(),
-                computerDTO.processor().threads());
-        Ram ram = ramsService.createRam(computerDTO.ram().ramType(), computerDTO.ram().ramNumber());
-        Screen screen = screenService.createScreen(computerDTO.screen().screenType(),
-                computerDTO.screen().resolutionX(), computerDTO.screen().resolutionY());
+        HardDrive hardDrive = Optional.ofNullable(computerDTO.hardDrive()).map(hardDriveDto ->
+                hardDrivesService.createHardDrive(hardDriveDto.hardDriveType(),
+                        hardDriveDto.capacity())).orElse(null);
+        Processor processor = Optional.ofNullable(computerDTO.processor()).map(
+                processorDto -> processorsService.createProcessor(processorDto.freq(),
+                        processorDto.model(), processorDto.cores(), processorDto.threads())).orElse(null);
+        Ram ram = Optional.ofNullable(computerDTO.ram()).map(ramDto -> ramsService.createRam(ramDto.ramType(),
+                ramDto.ramNumber())).orElse(null);
+        Screen screen = Optional.ofNullable(computerDTO.screen()).map(screenDto ->
+                screenService.createScreen(screenDto.screenType(), screenDto.resolutionX(),
+                        screenDto.resolutionY())).orElse(null);
         return mapComputerToDTO(computerRepository.save(Computer.builder().brand(brand).computerName(
                 computerDTO.computerName()).hardDrive(hardDrive).processor(processor).ram(ram).screen(
                         screen).build()));
@@ -81,17 +89,56 @@ public class ComputersService {
         computer.setComputerName(computerDTO.computerName());
         computer.setBrand(brandsService.updateBrand(computer.getBrand().getId(), computerDTO.brandName(),
                 computerRepository));
-        computer.setHardDrive(hardDrivesService.updateHardDrive(computer.getHardDrive().getId(),
-                computerDTO.hardDrive().capacity(), computerDTO.hardDrive().hardDriveType()));
-        computer.setProcessor(processorsService.updateProcessor(computer.getProcessor().getId(),
-                computerDTO.processor().freq(), computerDTO.processor().model(),
-                computerDTO.processor().cores(), computerDTO.processor().threads()));
-        computer.setRam(ramsService.updateRam(computer.getRam().getId(), computerDTO.ram().ramType(),
-                computerDTO.ram().ramNumber()));
-        computer.setScreen(screenService.updateScreen(computer.getScreen().getId(),
-                computerDTO.screen().screenType(), computerDTO.screen().resolutionX(),
-                computerDTO.screen().resolutionY()));
-        computerRepository.save(computer);
+
+        Optional.ofNullable(computerDTO.hardDrive()).ifPresentOrElse(
+                dto -> Optional.ofNullable(computer.getHardDrive())
+                        .map(existing -> hardDrivesService.updateHardDrive(
+                                existing.getId(), dto.capacity(), dto.hardDriveType()))
+                        .or(() -> Optional.of(hardDrivesService.createHardDrive(dto.hardDriveType(), dto.capacity())))
+                        .ifPresent(computer::setHardDrive),
+                () -> Optional.ofNullable(computer.getHardDrive())
+                        .ifPresent(existing -> {
+                            hardDrivesService.deleteHardDrive(existing.getId());
+                            computer.setHardDrive(null);
+                        })
+        );
+        Optional.ofNullable(computerDTO.processor()).ifPresentOrElse(
+                dto -> Optional.ofNullable(computer.getProcessor())
+                        .map(existing -> processorsService.updateProcessor(existing.getId(),
+                                dto.freq(), dto.model(), dto.cores(), dto.threads()))
+                        .or(() -> Optional.of(processorsService.createProcessor(
+                                dto.freq(), dto.model(), dto.cores(), dto.threads())))
+                        .ifPresent(computer::setProcessor),
+                () -> Optional.ofNullable(computer.getProcessor())
+                        .ifPresent(existing -> {
+                            processorsService.deleteProcessor(existing.getId());
+                            computer.setProcessor(null);
+                        })
+        );
+        Optional.ofNullable(computerDTO.ram()).ifPresentOrElse(
+                dto -> Optional.ofNullable(computer.getRam())
+                        .map(existing -> ramsService.updateRam(existing.getId(), dto.ramType(), dto.ramNumber()))
+                        .or(() -> Optional.of(ramsService.createRam(dto.ramType(), dto.ramNumber())))
+                        .ifPresent(computer::setRam),
+                () -> Optional.ofNullable(computer.getRam())
+                        .ifPresent(existing -> {
+                            ramsService.deleteRam(existing.getId());
+                            computer.setRam(null);
+                        })
+        );
+        Optional.ofNullable(computerDTO.screen()).ifPresentOrElse(
+                dto -> Optional.ofNullable(computer.getScreen())
+                        .map(existing -> screenService.updateScreen(existing.getId(),
+                                dto.screenType(), dto.resolutionX(), dto.resolutionY()))
+                        .or(() -> Optional.of(screenService.createScreen(
+                                dto.screenType(), dto.resolutionX(), dto.resolutionY())))
+                        .ifPresent(computer::setScreen),
+                () -> Optional.ofNullable(computer.getScreen())
+                        .ifPresent(existing -> {
+                            screenService.deleteScreen(existing.getId());
+                            computer.setScreen(null);
+                        })
+        ); computerRepository.save(computer);
     }
 
     @Transactional
@@ -100,9 +147,16 @@ public class ComputersService {
                 () -> new NoSuchElementException("Computer with id: " + id + " not found! "));
         computerRepository.deleteById(id);
         brandsService.deleteBrand(computer.getBrand().getId(), computerRepository);
-        hardDrivesService.deleteHardDrive(computer.getHardDrive().getId());
-        processorsService.deleteProcessor(computer.getProcessor().getId());
-        ramsService.deleteRam(computer.getRam().getId());
-        screenService.deleteScreen(computer.getScreen().getId());
+
+        Optional.ofNullable(computer.getHardDrive())
+                .ifPresent(hd -> hardDrivesService.deleteHardDrive(hd.getId()));
+        Optional.ofNullable(computer.getHardDrive())
+                .ifPresent(hd -> hardDrivesService.deleteHardDrive(hd.getId()));
+        Optional.ofNullable(computer.getProcessor())
+                .ifPresent(proc -> processorsService.deleteProcessor(proc.getId()));
+        Optional.ofNullable(computer.getRam())
+                .ifPresent(ram -> ramsService.deleteRam(ram.getId()));
+        Optional.ofNullable(computer.getScreen())
+                .ifPresent(screen -> screenService.deleteScreen(screen.getId()));
     }
 }

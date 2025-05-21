@@ -20,7 +20,7 @@ public class ComputersController {
         this.computersService = computersService;
     }
 
-    @GetMapping()
+    @GetMapping("/computers")
     public ResponseEntity<?> getAllComputers(Pageable pageable) {
         try {
             return ResponseEntity.ok(computersService.getAllComputers(pageable));
@@ -29,7 +29,7 @@ public class ComputersController {
         }
     }
 
-    @GetMapping ("/{id}")
+    @GetMapping ("/computers/{id}")
     public ResponseEntity<?> getComputerById(@PathVariable long id) {
         try {
             return ResponseEntity.ok(computersService.getComputerById(id));
