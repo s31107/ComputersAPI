@@ -1,5 +1,6 @@
 package pl.computers.computersapp.Controllers;
 
+import jakarta.validation.Valid;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.mapping.PropertyReferenceException;
 import org.springframework.http.HttpStatus;
@@ -7,7 +8,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
 import pl.computers.computersapp.Models.DTOs.ComputerDTO;
-import pl.computers.computersapp.Models.DTOs.ComputerGetDTO;
+import pl.computers.computersapp.Models.DTOs.ComputerPutDTO;
 import pl.computers.computersapp.Services.ComputersService;
 import java.util.NoSuchElementException;
 
@@ -39,7 +40,7 @@ public class ComputersController {
     }
 
     @PostMapping("/addComputer")
-    public ResponseEntity<?> createComputer(@RequestBody ComputerDTO computerDTO) {
+    public ResponseEntity<?> createComputer(@RequestBody @Valid ComputerDTO computerDTO) {
         try {
             return ResponseEntity.ok(computersService.createComputer(computerDTO));
         } catch (NoSuchElementException | IllegalArgumentException exc) {
@@ -50,7 +51,7 @@ public class ComputersController {
     }
 
     @PutMapping("/updateComputer")
-    public ResponseEntity<String> updateComputer(@RequestBody ComputerGetDTO computerDTO) {
+    public ResponseEntity<String> updateComputer(@RequestBody @Valid ComputerPutDTO computerDTO) {
         try {
             computersService.updateComputer(computerDTO);
         } catch (NoSuchElementException | IllegalArgumentException exc) {

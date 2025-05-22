@@ -70,8 +70,6 @@ function parseRow(button, id) {
         computerName: cells[1].innerText.trim()
     };
     if (id !== null) { res.id = id; }
-    if (res.brandName === "") { res.brandName = null; }
-    if (res.computerName === "") { res.computerName = null; }
     if (processorData.length === 4) {
         res.processor = {
             model: processorData[0],

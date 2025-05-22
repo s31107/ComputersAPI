@@ -83,7 +83,7 @@ public class ComputersService {
                         screen).build()));
     }
 
-    public void updateComputer(ComputerGetDTO computerDTO) {
+    public void updateComputer(ComputerPutDTO computerDTO) {
         Computer computer = computerRepository.findById(computerDTO.id()).orElseThrow(
                 () -> new NoSuchElementException("Computer with id: " + computerDTO.id() + " not found! "));
         computer.setComputerName(computerDTO.computerName());
