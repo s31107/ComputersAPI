@@ -2,6 +2,7 @@ package pl.computers.computersapp.Services;
 
 import org.springframework.stereotype.Service;
 import pl.computers.computersapp.Models.Processor;
+import pl.computers.computersapp.Repositories.ComputerRepository;
 import pl.computers.computersapp.Repositories.ProcessorRepository;
 
 import java.math.BigDecimal;
@@ -30,8 +31,11 @@ public class ProcessorsService {
         }
     }
 
-    public void deleteProcessor(long id) {
-        processorRepository.deleteById(id);
+    public void deleteProcessor(long id, ComputerRepository computersRepository) {
+        if (computersRepository.findAll().stream().noneMatch(
+                computer -> computer.getProcessor().getId() == id)) {
+            processorRepository.deleteById(id);
+        }
     }
 
     public Processor updateProcessor(long id, BigDecimal freq, String model, int cores, int threads) {

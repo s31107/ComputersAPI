@@ -3,10 +3,10 @@ package pl.computers.computersapp.Models.DTOs;
 import jakarta.validation.constraints.*;
 
 public record ScreenDTO (
-    @Max(1080)
+    @Min(100)
     @NotNull
     int resolutionX,
-    @Min(480)
+    @Min(100)
     @NotNull
     int resolutionY,
     @Size(max = 10)

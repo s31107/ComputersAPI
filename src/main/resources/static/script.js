@@ -1,10 +1,11 @@
 let sortColumn = 'id';
 let sortOrder = 'asc';
+let versionStorage = {}
 
 function renderTable() {
     const tbody = document.querySelector('#dataTable tbody');
     tbody.innerHTML = '';
-
+    Object.keys(versionStorage).forEach(key => delete versionStorage[key]);
     fetch("/data/computers?sort=" + sortColumn + "," + sortOrder)
         .then(response => {
             if (!response.ok) {
@@ -21,6 +22,7 @@ function renderTable() {
                 const processorData = (row.processor === null) ? "" : row.processor.model + ', ' + row.processor.freq + 'GHz, ' + row.processor.cores + 'rdz, ' + row.processor.threads + 'wąt';
                 const ramData = (row.ram === null) ? "" : row.ram.ramNumber + 'GB, ' + row.ram.ramType;
                 const screenData = (row.screen === null) ? "" : row.screen.resolutionX + 'px, ' + row.screen.resolutionY + 'px, ' + row.screen.screenType;
+                versionStorage[row.id] = row.version;
 
                 tr.innerHTML = `
                 <td>${row.id}</td>
@@ -67,7 +69,8 @@ function parseRow(button, id) {
 
     const res = {
         brandName: cells[0].innerText.trim(),
-        computerName: cells[1].innerText.trim()
+        computerName: cells[1].innerText.trim(),
+        version: versionStorage[id]
     };
     if (id !== null) { res.id = id; }
     if (processorData.length === 4) {
@@ -121,7 +124,7 @@ function saveRow(data, sendMethod, url) {
 }
 
 function deleteRow(id) {
-    fetch('/data/deleteComputer/' + id, {
+    fetch('/data/deleteComputer/' + id + '/' + versionStorage[id], {
         method: 'DELETE'
     }).then(response => {
         if (!response.ok) {

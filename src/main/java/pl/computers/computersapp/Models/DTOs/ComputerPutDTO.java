@@ -2,6 +2,7 @@ package pl.computers.computersapp.Models.DTOs;
 
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 
 public record ComputerPutDTO(
@@ -20,5 +21,7 @@ public record ComputerPutDTO(
         @Valid
         RamDTO ram,
         @Valid
-        ScreenDTO screen
+        ScreenDTO screen,
+        @NotNull
+        long version
 ) {}

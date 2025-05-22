@@ -8,5 +8,6 @@ public record ComputerGetDTO (
     HardDriveDTO hardDrive,
     ProcessorDTO processor,
     RamDTO ram,
-    ScreenDTO screen
+    ScreenDTO screen,
+    long version
 ) {}

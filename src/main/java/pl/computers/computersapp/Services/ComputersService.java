@@ -1,5 +1,6 @@
 package pl.computers.computersapp.Services;
 
+import jakarta.persistence.OptimisticLockException;
 import jakarta.transaction.Transactional;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -51,13 +52,12 @@ public class ComputersService {
                 .orElse(null);
 
         return new ComputerGetDTO(computer.getId(), computer.getBrand().getName(), computer.getComputerName(),
-                hardDriveDTO, processorDTO, ramDTO, screenDTO);
+                hardDriveDTO, processorDTO, ramDTO, screenDTO, computer.getVersion());
     }
 
     public List<ComputerGetDTO> getAllComputers(Pageable pageable) {
         return computerRepository.findAll(pageable).stream().map(ComputersService::mapComputerToDTO).toList();
     }
-
 
     public ComputerGetDTO getComputerById(long id) {
         return mapComputerToDTO(computerRepository.findById(id).orElseThrow(
@@ -89,7 +89,9 @@ public class ComputersService {
         computer.setComputerName(computerDTO.computerName());
         computer.setBrand(brandsService.updateBrand(computer.getBrand().getId(), computerDTO.brandName(),
                 computerRepository));
-
+        if (computerDTO.version() != computer.getVersion()) {
+            throw new IllegalArgumentException("Computer has different version than provided in request.");
+        }
         Optional.ofNullable(computerDTO.hardDrive()).ifPresentOrElse(
                 dto -> Optional.ofNullable(computer.getHardDrive())
                         .map(existing -> hardDrivesService.updateHardDrive(
@@ -111,7 +113,7 @@ public class ComputersService {
                         .ifPresent(computer::setProcessor),
                 () -> Optional.ofNullable(computer.getProcessor())
                         .ifPresent(existing -> {
-                            processorsService.deleteProcessor(existing.getId());
+                            processorsService.deleteProcessor(existing.getId(), computerRepository);
                             computer.setProcessor(null);
                         })
         );
@@ -142,18 +144,19 @@ public class ComputersService {
     }
 
     @Transactional
-    public void deleteComputer(long id) {
+    public void deleteComputer(long id, long version) {
         Computer computer = computerRepository.findById(id).orElseThrow(
-                () -> new NoSuchElementException("Computer with id: " + id + " not found! "));
+                () -> new NoSuchElementException("Computer with id: " + id + " not found!"));
+        if (computer.getVersion() != version) {
+            throw new OptimisticLockException("Computer has different version than provided in request.");
+        }
         computerRepository.deleteById(id);
         brandsService.deleteBrand(computer.getBrand().getId(), computerRepository);
 
         Optional.ofNullable(computer.getHardDrive())
                 .ifPresent(hd -> hardDrivesService.deleteHardDrive(hd.getId()));
-        Optional.ofNullable(computer.getHardDrive())
-                .ifPresent(hd -> hardDrivesService.deleteHardDrive(hd.getId()));
         Optional.ofNullable(computer.getProcessor())
-                .ifPresent(proc -> processorsService.deleteProcessor(proc.getId()));
+                .ifPresent(proc -> processorsService.deleteProcessor(proc.getId(), computerRepository));
         Optional.ofNullable(computer.getRam())
                 .ifPresent(ram -> ramsService.deleteRam(ram.getId()));
         Optional.ofNullable(computer.getScreen())

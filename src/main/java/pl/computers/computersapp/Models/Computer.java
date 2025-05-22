@@ -32,4 +32,6 @@ public class Computer {
     @ManyToOne
     @JoinColumn(name = "RAM_ID")
     private Ram ram;
+    @Version
+    private long version;
 }

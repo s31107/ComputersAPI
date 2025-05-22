@@ -1,5 +1,6 @@
 package pl.computers.computersapp.Controllers;
 
+import jakarta.persistence.OptimisticLockException;
 import jakarta.validation.Valid;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.mapping.PropertyReferenceException;
@@ -54,18 +55,18 @@ public class ComputersController {
     public ResponseEntity<String> updateComputer(@RequestBody @Valid ComputerPutDTO computerDTO) {
         try {
             computersService.updateComputer(computerDTO);
-        } catch (NoSuchElementException | IllegalArgumentException exc) {
+        } catch (NoSuchElementException | IllegalArgumentException | OptimisticLockException exc) {
             return new ResponseEntity<>(exc.getMessage(), HttpStatus.CONFLICT);
         } catch (Exception exc) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST);
         } return ResponseEntity.noContent().build();
     }
 
-    @DeleteMapping("/deleteComputer/{id}")
-    public ResponseEntity<String> deleteComputer(@PathVariable long id) {
+    @DeleteMapping("/deleteComputer/{id}/{version}")
+    public ResponseEntity<String> deleteComputer(@PathVariable long id, @PathVariable long version) {
         try {
-            computersService.deleteComputer(id);
-        } catch (NoSuchElementException exc) {
+            computersService.deleteComputer(id, version);
+        } catch (NoSuchElementException | OptimisticLockException exc) {
             return new ResponseEntity<>(exc.getMessage(), HttpStatus.NOT_FOUND);
         } catch (Exception exc) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST);
